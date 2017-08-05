@@ -48,4 +48,10 @@ typedef double   f64;
 /* Byte type */
 typedef uint8_t byte;
 
+/* Data chunk descriptor in files */
+typedef struct {
+    u32 offset;
+    u32 size;
+} data_chunk;
+
 #endif /* ! _TYPES_H_ */

@@ -28,103 +28,56 @@
 /*   ' ') '( (/                                                                                                      */
 /*     '   '  `                                                                                                      */
 /*********************************************************************************************************************/
-#ifndef _MDL_H_
-#define _MDL_H_
+#ifndef _ANM_H_
+#define _ANM_H_
 
 #include "types.h"
 
-#define MDL_MAGIC "MDL"
-#define MDL_INVALID_OFFSET 0xFFFFFFFF
+/* Animation change components */
+#define ANM_COMP_UNKN (1 << 0)
+#define ANM_COMP_POSX (1 << 1)
+#define ANM_COMP_POSY (1 << 2)
+#define ANM_COMP_POSZ (1 << 3)
+#define ANM_COMP_ROTX (1 << 4)
+#define ANM_COMP_ROTY (1 << 5)
+#define ANM_COMP_ROTZ (1 << 6)
+#define ANM_COMP_ROTW (1 << 7)
+#define ANM_COMP_SCLX (1 << 8)
+#define ANM_COMP_SCLY (1 << 9)
+#define ANM_COMP_SCLZ (1 << 10)
 
-/* Model File */
-struct mdl_file {
+/* Animation File */
+struct anm_file {
     /* Header */
-    struct mdl_header {
-        /* File identifier {0x4D, 0x44, 0x4C, 0x00} */
+    struct anm_header {
+        /* File identifier {0x41, 0x4E, 0x4D, 0x00} */
         byte id[4];
         /* Version {0x00, 0x01} */
         struct {
             u16 maj;
             u16 min;
         } ver;
-        /* Flags:
-         *  Bit 0: Rigged
-         *  Bit 1-31: Unused */
-        struct {
-            int rigged : 1;
-            int unused : 31;
-        } flags;
-        /* Number of vertices (total) */
-        u32 num_vertices;
-        /* Number of indices (total) */
-        u32 num_indices;
-        /* Number of mesh descriptors */
-        u16 num_mesh_descs;
+        /* Frame rate */
+        f32 frame_rate;
         /* Number of joints */
         u16 num_joints;
-        /* Number of strings */
-        u32 num_strings;
-        /* Data chunk of mesh descriptors */
-        data_chunk mesh_descs;
-        /* Data chunk of vertices */
-        data_chunk verts;
-        /* Data chunk of weights */
-        data_chunk weights;
-        /* Data chunk of indices */
-        data_chunk indices;
+        /* Number of joints */
+        u16 num_frames;
+        /* Number of changes */
+        u32 num_changes;
         /* Data chunk of joints */
         data_chunk joints;
-        /* Data chunk of array of joint name offsets */
-        data_chunk joint_name_ofs;
-        /* Data chunk of strings */
-        data_chunk strings;
+        /* Data chunk of frame infos */
+        data_chunk frame_infos;
+        /* Data chunk of changes */
+        data_chunk changes;
     } header;
 
-    /* Array of mesh descriptors */
-    struct mdl_mesh_desc {
-        /* Name offset in strings */
-        u32 ofs_name;
-        /* Number of vertices */
-        u32 num_vertices;
-        /* Number of indices */
-        u32 num_indices;
-        /* Offset to array of vertices (relative to verts field) */
-        u32 ofs_verts;
-        /* Offset to array of weights (relative to weights field) */
-        u32 ofs_weights;
-        /* Offset to array of indices (relative to indices field) */
-        u32 ofs_indices;
-        /* Material reference index */
-        u16 mat_idx;
-    }* mesh_desc;
-
-    /* Array of vertices */
-    struct mdl_vertex {
-        /* Position */
-        f32 position[3];
-        /* Normal */
-        f32 normal[3];
-        /* UV */
-        f32 uv[2];
-    }* vertices;
-
-    /* Array of joint weights
-     * (only if bit 0 is set) */
-    struct mdl_vertex_weight {
-        /* Blend indices */
-        u16 blend_ids[4];
-        /* Blend weights */
-        f32 blend_weights[4];
-    }* weights;
-
-    /* Array of indices */
-    u32* indices;
-
-    /* Array of joints
+    /* Array of joints (base frame)
      *  - Transforms are absolute, not relative to parent */
-    struct mdl_joint {
-        /* Reference to parent (index to current array) */
-        u32 ref_parent;
+    struct anm_joint {
+        /* Parent index */
+        u32 par_idx;
         /* Position */
         f32 position[3];
         /* Rotation (quaternion) */
@@ -133,14 +86,27 @@ struct mdl_file {
         f32 scaling[3];
     }* joints;
 
-    /* Array of joint name offsets */
-    u32* joint_name_ofs;
+    /* Array of frame infos */
+    struct anm_frame_info {
+        /* Number of changes belonging to this frame */
+        u16 num_changes;
+    }* frame_infos;
 
-    /* Strings data
-     *  - Contains contatenated list of strings null terminated strings */
-    const char* strings;
+    /* Array of animation changes */
+    struct anm_change {
+        /* Joint index */
+        u16 joint_idx;
+        /* Components filled in */
+        u16 components;
+        /* Position */
+        f32 pos[3];
+        /* Rotation */
+        f32 rot[4];
+        /* Scale */
+        f32 scl[3];
+    }* changes;
 };
 
-void mdl_parse_from_buf(struct mdl_file* m, byte* buf, u32 buf_sz);
+void anm_parse_from_buf(struct anm_file* a, byte* buf, u32 buf_sz);
 
-#endif /* ! _MDL_H_ */
+#endif /* ! _ANM_H_ */
