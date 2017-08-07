@@ -61,16 +61,16 @@ struct anm_file {
         f32 frame_rate;
         /* Number of joints */
         u16 num_joints;
-        /* Number of joints */
+        /* Number of frames */
         u16 num_frames;
-        /* Number of changes */
-        u32 num_changes;
+        /* Number of values */
+        u32 num_values;
         /* Data chunk of joints */
         data_chunk joints;
-        /* Data chunk of frame infos */
-        data_chunk frame_infos;
         /* Data chunk of changes */
         data_chunk changes;
+        /* Data chunk of values */
+        data_chunk values;
     } header;
 
     /* Array of joints (base frame)
@@ -86,25 +86,11 @@ struct anm_file {
         f32 scaling[3];
     }* joints;
 
-    /* Array of frame infos */
-    struct anm_frame_info {
-        /* Number of changes belonging to this frame */
-        u16 num_changes;
-    }* frame_infos;
+    /* Array of joint changes (bitflags) */
+    u16* changes;
 
-    /* Array of animation changes */
-    struct anm_change {
-        /* Joint index */
-        u16 joint_idx;
-        /* Components filled in */
-        u16 components;
-        /* Position */
-        f32 pos[3];
-        /* Rotation */
-        f32 rot[4];
-        /* Scale */
-        f32 scl[3];
-    }* changes;
+    /* Array of change values */
+    f32* values;
 };
 
 void anm_parse_from_buf(struct anm_file* a, byte* buf, u32 buf_sz);
